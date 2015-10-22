@@ -1,0 +1,32 @@
+r51m_thermal_5ps_1600K
+MOPDYN FOR RATES
+RUN  /home/youxq/you/mopac/MOPAC2012.exe
+PARAMETERIZATION PM6
+uhf bonds 1SCF SCFCRT=1.D-10 AUX(PRECISION=9) 
+    11  F   T   T   F                   ! IPOT,LENER,LMOMEN,LXROT,LBOUND
+        F   F   F   F                   ! LTEMP,LTEST,RIMAGE,LCHARG
+        F   F   F   T                   ! LNOISE,LTRAMP,LQUENCH,LTSTAT
+     36  0    0                         ! N,NIMAGE,NRECT
+    1    .00001   .00000   1600.0   1   ! ICF,VMAX,ZNOISE,TREF,IDENRC
+    0.5     5       2000                ! DT,NTIME,NSNAP
+   0.0 0.0 0.0                          ! SX,SY,SZ      
+     .000000         F                  ! TRAMP,RTSTAT 
+        1000.00     100.000000             ! TCONST,ZTHERM
+		0.544  20.0                      ! SCALE DBOUND
+                  6.11922000   -0.72470900    0.00000200		6 3 0
+                  4.95450000   -1.41661300    0.00000200		6 3 0
+                  3.67104300   -0.72752800    0.00000000		6 3 0
+                  3.67104300    0.72752800    0.00000000		6 3 0
+                  4.95450000    1.41661300    0.00000000		6 3 0
+                  6.11922000    0.72470900    0.00000200		6 3 0
+                  ................
+                  ................
+                  ................
+                  vx1          vy1            vz1
+                  vx2          vy2            vz2
+                  ................
+                  ................
+                  ................    
+              IGHOST or ILINK possibly     
+
+

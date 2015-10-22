@@ -1,0 +1,996 @@
+\RequirePackage{xcolor} % to use xcolor in jhep3
+%\documentclass[10pt]{article}
+%\documentclass[prd,preprint]{revtex4}
+\documentclass[11pt]{JHEP3}
+%\documentclass[published]{JHEP3}
+
+%\usepackage{amsmath}
+%\usepackage{graphicx}
+%\usepackage{amssymb}
+%\usepackage{latexsym}
+%\usepackage{dcolumn}% Align table columns on decimal point
+%\usepackage{bm}% bold math
+%\usepackage{epsfig,multicol,bbm}
+\usepackage{listings}% to insert codes in tex
+\usepackage[framed,numbered,autolinebreaks,useliterate]{mcode} %inline code enviroment
+\usepackage{multirow} %multi-line in tabular
+\usepackage{float} % fix the position of table
+%\usepackage{color}
+%\usepackage{xcolor}
+%\usepackage{epstopdf}
+%\usepackage[T1]{fontenc}
+%\usepackage[latin9]{inputenc}
+%\usepackage{units}
+%\usepackage{esint}
+
+\setlength{\textwidth}{17cm} %
+\setlength{\textheight}{25cm} %
+\setlength{\topmargin}{0.5cm} %
+\setlength{\oddsidemargin}{2cm} %
+%multi-line in tabular
+\newcommand{\tabincell}[2]{\begin{tabular}{@{}#1@{}}#2\end{tabular}}
+% the style of inserted codes
+%\lstset{
+%    upquote=true,
+%    aboveskip={1.5\baselineskip},
+%    columns=fullflexible,
+%    showstringspaces=false,
+%    extendedchars=true,
+%    showtabs=false,
+%    showspaces=false,
+%    showstringspaces=false,
+%    identifierstyle=\ttfamily,
+%    escapeinside=``,
+ \lstset{language=Fortran,
+%        numbers=right,
+%        numberstyle= \tiny,
+%        keywordstyle= \color{blue!70},
+%        commentstyle=\color{red!50!green!50!blue!50},
+%        frame=shadowbox,
+%         frame=L,
+        rulesepcolor= \color{ red!20!green!20!blue!20},
+%        breaklines=true,
+%        tabsize=4,
+%        basicstyle=\footnotesize\ttfamily,
+        escapeinside=``,
+        keywordstyle=\bfseries\color{green!60!black},
+        commentstyle=\itshape\color{purple},
+        identifierstyle=\color{blue},
+        stringstyle=\color{orange},
+%        framexleftmargin=1.2em, xleftmargin=1.2em, aboveskip=1em,
+        }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{Notes on a Molecular Dynamics Package MOPDYN13}
+
+\author{Hong-Bo Zhang\\
+ Center for Combustion Energy, Tsinghua University, Beijing, 10084,
+ China\\
+ hongbozhang@tsinghua.edu.cn}
+%\author[a]{Hong-Bo Zhang,\note{Corresponding author} }
+%\affiliation[a]{Center for Combustion Energy, Tsinghua University,
+%Beijing, 10084, China}
+%\emailAdd{hongbozhang@tsinghua.edu.cn }
+
+%\begin{abstract}
+\abstract{ MOPDYN13 is a paralleled Fortran77 package to perform ab
+initio molecular dynamics (MD) simulation, empirical MD and combined
+MD with the Beeman's third order integrator algorithm, in which
+PM3/6 in MOPAC is used as the quantum chemistry potential in ab
+initio MD. Although MOPDYN13 is powerful, its manual is not detailed
+enough. Therefore, several issues on how to use this package will be
+summarized in this note.}
+%\end{abstract}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+\newpage
+\section{Keywords in Dynput File}
+
+Files with extension 'dynput' are the configuration file (input
+file) of MOPDYN13, which should be executed as
+
+\begin{lstlisting}[language=sh]
+ mopdyn13 *.dynput
+\end{lstlisting}
+
+In the dynput file, one should specify coordinates and velocities of
+atoms, as well as tens of keywords of which the detailed information
+will be summarized in the following.
+
+\subsection{Keywords}\label{sec:key}
+
+A typical dynput file should be like this:
+
+\lstinputlisting{example.dynput}
+
+\begin{itemize}
+\item  In the line $1$, there is a name of task, which has $40$ characters
+at most and there's no space within.
+
+\item The keywords in the line $2$ should be one of the six options,
+which are
+\begin{lstlisting}
+  MOPAC VERSION, MOPAC 6, MOPAC 7, MOPDYN * RATES, MOPDYN * MORPHOLOGY, MOPDYN * HEATTRANSFER
+\end{lstlisting}
+where * stands for any word. Among them, \mcode{MOPDYN * RATES} is
+most frequently used in our study on collision of molecules. The
+keywords in this line will determine an important parameter
+\mcode{imopcall}, which will determine how to call MOPAC and how to
+set atoms. Detailed information is listed in Tab.\ref{Tab:1}. As
+shown in Tab.\ref{Tab:1}, the several lines below the 2nd line are
+different with different value of \mcode{imopcall}. Because the
+\mcode{MOPDYN for RATE} is important for our usage, we will
+summarize them in the case of \mcode{imopcall=50} only.
+%\end{itemize}
+
+%\lstinline{VMAX}
+%\multirow{2}{*}{}
+\begin{table}%[H]
+\scriptsize
+\begin{centering}
+\begin{tabular}{|c|c|c|c|}
+\hline 2nd line & imopcall & MopacVersion & Remarks\tabularnewline
+\hline \hline \tabincell{c}{MOPCA  VERSION} & 1 & 6 or 7 &
+\tabincell{c}{MopacVersion and MopacType in the 3rd line,\\
+MopCommand in the 4th line. LCHARGE should be F.\\PM6 isn't allowed
+and wine MOPAC\_7.2 actually \\ if MopacVersion is 6}
+\tabularnewline \hline MOPAC 6 & 0 & 6 & \tabincell{c}{MopacType in
+the 3rd line, MopCommand should
+\\not be read from dynput file. LCHARGE should be F.\\PM6 isn't allowed
+and wine MOPAC\_7.2 actually} \tabularnewline \hline MOPAC 7 & 0 & 7
+& the same as above except the last sentence\tabularnewline \hline
+\tabincell{c}{$\bigstar$ MOPDYN {*} RATES } & 50 & 7 &
+\tabincell{c}{MopSolver in the 3rd line, MopacType in the 4th
+line,\\ MopCommand in the 5th line,\\Run the given MopSolver}
+\tabularnewline \hline \tabincell{c}{MOPDYN {*} MORPHOLOGY} & 100 &
+7 & the same as above \& configuration of atoms \tabularnewline
+\hline \tabincell{c}{MOPDYN {*} HEATTRANSFER} & 500
+& 7 & \tabincell{c}{ActiveBndr begins at the 3rd line, the same \\
+as above \& configuration of atoms} \tabularnewline \hline
+\end{tabular}
+\end{centering}
+\caption{The second line in dynput file\label{Tab:1}}
+\end{table}
+
+%\begin{itemize}
+\item The MopacSolver is located in the third line. In this example,
+\mcode{/home/youxq/.../MOPAC2012.exe mopac} will be executed.
+Nevertheless, in principle, MopacSolver can be any command which can
+be executed in Shell.
+
+\item In the fourth line, MopacType is next to
+\mcode{PARAMETERIZATION}, which can be \mcode{PM3,PM6,
+AM1},$\ldots$. For our demands, \mcode{PM6} will be used.
+
+\item In the fifth line, there is MopacCommands, which will be
+passed to MOPAC2012.exe together with some additional paramters such
+as \mcode{denout xyz gradients dcart geo-ok}. In this example, the
+parameters passed to MOPAC2012.exe should be \mcode{PM6 uhf bonds
+1SCF SCFCRT=1.D-10 AUX(PRECISION=9) denout (oldens) xyz gradients
+dcart geo-ok}. The meaning of the parameters can be found in MOPAC's
+manual, and I also list them in Sec.\ref{sec:mopac} briefly.
+
+\item In the sixth line, there are five keys, which are \mcode{IPOT,LENER,LMOMEN,LXROT,LBOUND
+} in order. \mcode{IPOT} specifies the potential between atoms. At
+present, there are 13 potentials including empirical potentials,
+QC(semi-empirical) potentials and combined potentials which can be
+found in \mcode{setup.f}, \lstinputlisting{setup.f} where
+\mcode{ICOMPOT=.T.} means that potential is a combined one. At first
+glance, one may think \mcode{IPOT=3} is suitable for us to do ab
+initio MD simulation, but it doesn't work since there is a bug in
+\mcode{accel.f} which is discussed in detail in Sec.\ref{sec:ipot3}.
+As a result, \mcode{IPOT=11} should be used for our purpose,
+although in this case there will be some useless calculations which
+makes computation time longer. \mcode{LENER=T} means maintaining the
+total energy constant by keeping the potential energy unchanged and
+rescaling the velocity every \mcode{DT} $fs$ in the case of
+potential energy is smaller than the initial total energy (initial
+kinetic energy plus initial potential energy). The case that the
+potential energy is larger than the initial total energy will happen
+when the step length in the iteration is too long and two atoms are
+so closed to each other. In this case, the two atoms may move even
+closer and the repulsion force between them will dominate. As a
+result, the potential energy will increase too much to become larger
+than the initial total energy which is physical unreasonable, and
+the program will interrupt. For thermalization, we should set
+\mcode{LENER=F}, but for collision, we should set \mcode{LENER=T}.
+If the option \mcode{LMOMEN=T}, the momentum of center of mass will
+be removed every \mcode{DT} $fs$ without rescaling velocity to
+maintain the original temperature and the resulting kinetic enenrgy
+\mcode{ZKE} will be returned. The function of \mcode{LXORT=T} is to
+remove the global angular momentum of the system every \mcode{DT}
+$fs$. As the same as \mcode{LMOMEN}, \mcode{LXORT} doesn't rescale
+the velocity to maintain the original temperature, neither. But
+\mcode{LXORT} will not return the resulting kinetic energy. The
+\mcode{subroutine periodic} to set minimum image boundary conditions
+will be called if \mcode{LBOUND=T} which is useful in lattice
+simulation which is not our interest, so it should be set to
+\mcode{F}. Furthermore if \mcode{LBOUND=T}, \mcode{SX,SY,SZ} should
+be assigned values.
+
+\item In the seventh line, there are four options, which are
+\mcode{LTEMP,LTEST,RIMAGE,LCHARG}. Among them, \mcode{LTEMP=T} is
+the option to call \mcode{subroutine ADHOC} which is used to rescale
+velocity to a certain temperature \mcode{TREF} (thermalization
+temperature) every \mcode{DT*NTIME} in a very crude and obsolete
+way. One can see Sec.\ref{sec:tem} for more detail of
+\mcode{subroutine ADHOC}. In our work, \mcode{LTEMP} should be set
+to \mcode{F}. The only use of \mcode{LTEST} is to determine whether
+calculate the acceleration and the velocity of image/ghost atoms for
+debugging via code \mcode{IF (LTEST) NLIM = NKEEP}, and
+\mcode{LTEST} is different from \mcode{DEBUGM}, which will result in
+outputting debug information in \mcode{*.outpt} if \mcode{DEBUGM=T}.
+Therefore, \mcode{LTEST} should be set to \mcode{F}. \mcode{RIMAGE}
+is not used any more, and its value will not pass to any buffer.
+Therefore, it doesn't matter at all to set it \mcode{T} or
+\mcode{F}. For convenience, we will always use \mcode{RIMAGE=F} in
+simulation. The last option \mcode{LCHARGE=T} will output bond
+orders and charges in files \mcode{*.bond,
+*.charge}, and it is not supported for the MOPAC version earlier than
+7. Of course, if one want to get information on bond order and
+charge, keyword \mcode{bonds} should be included in MopacCommands in
+line five.
+
+\item In the eighth line, four options
+\mcode{LNOISE,LTRAMP,LQUENCH,LTSTAT} stand in a row. If
+\mcode{LNOISE=T}, random velocities (noise) ranging from
+\mcode{-ZNOISE} to \mcode{+ZNOISE} will be added to original
+velocities, followed by removing the center of mass momentum and
+global angular momentum and rescaling the velocities to maintain
+original temperature. The function of \mcode{LTRAMP} is to change
+thermalization temperature \mcode{TREF} by \mcode{TRAMP} every
+\mcode{DT} fetoseconds. It may be useful in heating or cooling.
+Keyword \mcode{LQUENCH} is used to find minimal potential energy
+structure. If atom $i$ is climbing up the potential, its velocity at
+time $t+DT$ will be smaller than that at time $t$, i.e.
+$|v_i(t+DT)|<|v_i(t)|$. At this moment, we set $\vec{v}_i(t+DT)$ to
+zero if \mcode{LQUENCH=T}. Obviously, at next time $t+2DT$, the atom
+$i$ will climb down the potential since its velocity
+$\vec{v}_i(t+DT)=0$. Obviously, it will approach the bottom of the
+potential if we keep doing so. Therefore, it will useful to find
+stable structure of a molecule. \mcode{LTSTAT} is an advanced
+version of \mcode{LTEMP}. \mcode{Subroutine thermstat} will be
+called to control the temperature of atoms with z-coordinate smaller
+than \mcode{ZTHERM} to maintain \mcode{TREF} if \mcode{LTSTAT=T},
+and the temperature will approach \mcode{TREF} in \mcode{TCONST*DT}
+fetoseconds in the condition that the potential energy is constant.
+However, in realistic case, the energy will transfer between
+potential energy and kinetic energy, so \mcode{TCONST*DT}
+fetoseconds is a rough estimation. Moreover, \mcode{subroutine
+thermstat} is called every \mcode{DT} fetoseconds. There are three
+related parameters in dynput file if \mcode{LTSTAT=T}. They are
+\mcode{TREF,TCONST,ZTHERM}. Noted that \mcode{LTEMP} will override
+\mcode{LTSTAT}, so if one wants to do thermalization, keywords
+should be set to be \mcode{LTEMP=F, LTSTAT=T,LENER=F}. For more
+information on temperature control, see Sec.\ref{sec:tem}.
+
+\item In the ninth line, there are three parameters, \mcode{N,NIMAGE,NRECT
+}. \mcode{N} is the number of atoms you input dynput file.
+\mcode{NIMAGE} is the number of image/ghost atoms, which either the
+empirical atoms near the junction of quantum atoms region and
+empirical atoms region in the combined potential MD or the atoms
+near the boundary in periodic boundary condition. \mcode{NRECT} is
+the number of H atoms added to make surface C or Si satisfy sp3
+hybridization. (I am not sure with these, I don't understand the
+code relevant to \mcode{NIMAGE}.) In our study, we should set
+\mcode{NIMAGE=0,NRECT=0}.
+
+\item In the tenth line, there are five parameters,
+\mcode{ICF,VMAX,ZNOISE,TREF,IDENRC}. \mcode{ICF} is the flag of
+initial condition. If \mcode{ICF=1}, there is only initial position
+in dynput file, and the initial velocities will be generated
+randomly, ranging from \mcode{-VMAX} to \mcode{VMAX} without
+removing center mass momentum and global angular momentum. If
+\mcode{ICF=2}, both initial position and initial velocity will be
+read from dynput file. If \mcode{ICF=3}, it is said that molecular
+orbital coefficients or density matrices will be read, but I didn't
+find any relevant codes on what will happen if \mcode{ICF=3}.
+Indeed, in file \mcode{SIZE}, there are some information on the
+orbitals, but there is nothing relevant of these orbital information
+in the Fortran or C files. Maybe, it is still in developing. For
+thermalization, one needs to set \mcode{ICF=1}; for collision, one
+needs to set \mcode{ICF=2}. \mcode{VMAX, ZNOISE, TREF} are in unit
+of $\AA/fs,\AA/fs,K$,respectively, and have been explained before.
+Noted that \mcode{TREF} is relevant to three options, they are
+\mcode{LTEMP,LTSTAT,LTRAMP}. \mcode{IDENRC} is useless and doesn't
+pass to any buffer. Maybe, it is in developing.
+
+\item In the eleventh line, there are three parameters, they are
+\mcode{DT,NTIME,NSNAP}. \mcode{DT} is the incremental timestep of MD
+simulation in unit of $fs$; \mcode{NTIME} is the number of time
+steps between outputs; and \mcode{NSNAP} is the number of output
+calls (snapshots of the system).
+
+\item In the twelfth line, there are three parameters,
+\mcode{SX,SY,SZ}, which is the boundary of the system or lattice.
+They are useful only if \mcode{LBOUND=T}. In our work, they are
+useless and could be set to zero.
+
+\item In the thirteenth line, there are one parameter and one
+option, \mcode{TRAMP,RTSTAT}. \mcode{TRAMP} in unit of $K$ has been
+explained before. And \mcode{RTSTAT} is the same as \mcode{LTSTAT}
+except for rescaling angular velocity. They share the same
+\mcode{TREF} and \mcode{TCONST}, but \mcode{RTSTAT} has nothing to
+do with \mcode{ZTHERM}.
+
+\item In the fourteenth line, there are two parameters, \mcode{TCONST,ZTHERM
+}, which have been introduced before. \mcode{TCONST} should be an
+integer, and it means the number of time step \mcode{DT}. In our
+work, \mcode{ZTHERM} in $\AA$ should be set to a large number.
+
+\item In the fifteenth line, there are two parameters, they are
+\mcode{SCALE,DBOUND}, which should not appear in the dynput file
+except satisfying the condition:\\
+%\begin{lstlisting}
+\mcode{IF(IMOPCALL.GE.50.AND.(IPOT.EQ.11.OR.IPOT.EQ.15))}\\
+%\end{lstlisting}
+which is case we met in MD simulation. \mcode{DBOUND}
+will be used in \mcode{empni.f} as cutoff, and \mcode{SCALE} will be
+also used in \mcode{empni.f} as scale factor which value will be
+re-assigned in \mcode{empni.f}. Since we will perform ab initio MD
+instead of using empirical potential \mcode{empni}, these two
+parameter are not of interest.
+
+\item Beginning from the sixteenth line, they are atom position
+specification. There are atomic cartesian coordinates in $\AA$
+followed by atomic number, number of potential and value of
+\mcode{JFIX=O} (non fixed atom) or \mcode{JFIX=1} (fixed atom). In
+our case, number of potential \mcode{ICOL} and \mcode{JFIX} should
+be assigned to 3 and and 0, respectively.
+
+\item Followed atom position, there should be atom velocity
+specification if \mcode{ICF=2}. Velocity is in unit of $\AA/fs$.
+
+\item At the end of the dynput file, there may be a list of
+\mcode{IGHOST \& ILINK} if \mcode{imopcall=500} for heat transfer
+purpose. I haven't understood the detail of heat transfer
+calculation. It seems that it calculate the particle number flux and
+momentum flux in lattice bounded by \mcode{SX,SY,SZ} with periodic
+boundary condition by gas tooth module. However, it is irrelevant to
+our work.
+
+\end{itemize}
+
+
+\subsection{Examples}
+
+\begin{itemize}
+\item Thermalization, isothermal: LENER = F, LTSTAT = T
+\begin{lstlisting}
+r51m_thermal_5ps_1600K                                        MOPDYN
+FOR RATES                                                  RUN
+/home/youxq/you/mopac/MOPAC2012.exe              PARAMETERIZATION
+PM6                                              uhf bonds 1SCF
+SCFCRT=1.D-10 AUX(PRECISION=9)
+    11  F   T   T   F                   ! IPOT,LENER,LMOMEN,LXROT,LBOUND
+        F   F   F   F                   ! LTEMP,LTEST,RIMAGE,LCHARG
+        F   F   F   T                   ! LNOISE,LTRAMP,LQUENCH,LTSTAT
+     36  0    0                         ! N,NIMAGE,NRECT
+    1    .00001   .00000   1600.0   1   ! ICF,VMAX,ZNOISE,TREF,IDENRC
+    0.5     5       2000                ! DT,NTIME,NSNAP
+   0.0 0.0 0.0                          ! SX,SY,SZ
+     .000000         F                  ! TRAMP,RTSTAT
+        1000.00     100.000000             ! TCONST,ZTHERM
+        0.544  20.0                      ! SCALE DBOUND
+                  6.11922000   -0.72470900    0.00000200        6 3 0
+                  4.95450000   -1.41661300    0.00000200        6 3 0
+                  3.67104300   -0.72752800    0.00000000        6 3 0
+                  ................
+\end{lstlisting}
+
+\item Collision, adiabatic: LENER = T, LTSTAT = F
+\begin{lstlisting}
+r51d_collision_z_5ps_1600K
+MOPDYN FOR RATES
+RUN /home/youxq/you/mopac/MOPAC2012.exe
+PARAMETERIZATION PM6
+uhf bonds 1SCF SCFCRT=1.D-10 AUX(PRECISION=9)
+    11  T   T   T   F                   ! IPOT,LENER,LMOMEN,LXROT,LBOUND
+        F   F   F   T                   ! LTEMP,LTEST,RIMAGE,LCHARG
+        F   F   F   F                   ! LNOISE,LTRAMP,LQUENCH,LTSTAT
+     72  0    0                         ! N,NIMAGE,NRECT
+    2    .00001   .00000   1600.0   1   ! ICF,VMAX,ZNOISE,TREF,IDENRC
+    0.5     5       2000                ! DT,NTIME,NSNAP
+   0.0 0.0 0.0                          ! SX,SY,SZ
+     .000000         F                  ! TRAMP,RTSTAT
+        1000.00     100.000000             ! TCONST,ZTHERM
+        0.544  20.0                      ! SCALE DBOUND
+        6.11922000   -0.72470900    0.00000200     6    3    0
+        ...............
+        3.67104300   -0.72752800    4.00000000     6    3    0
+        ................
+        -0.016433    0.000293   0.007034
+        ................
+        0.010590    0.007662   -0.022977
+\end{lstlisting}
+
+\item Quenching: LENER = F, LTSTAT = F, LQUENCH = T
+\begin{lstlisting}
+r51m_quench_5ps_1600K
+MOPDYN FOR RATES
+RUN /home/youxq/you/mopac/MOPAC2012.exe
+PARAMETERIZATION PM6
+uhf bonds 1SCF SCFCRT=1.D-10 AUX(PRECISION=9)
+    11  F   T   T   F                   ! IPOT,LENER,LMOMEN,LXROT,LBOUND
+        F   F   F   F                   ! LTEMP,LTEST,RIMAGE,LCHARG
+        F   F   T   F                   ! LNOISE,LTRAMP,LQUENCH,LTSTAT
+     36  0    0                         ! N,NIMAGE,NRECT
+    2    .00001   .00000   1600.0   1   ! ICF,VMAX,ZNOISE,TREF,IDENRC
+    0.5     5       2000                ! DT,NTIME,NSNAP
+   0.0 0.0 0.0                          ! SX,SY,SZ
+     .000000         F                  ! TRAMP,RTSTAT
+        1000.00     100.000000             ! TCONST,ZTHERM
+        0.544  20.0                      ! SCALE DBOUND
+                  6.11922000   -0.72470900    0.00000200        6 3 0
+                  3.67104300   -0.72752800    0.00000000        6 3 0
+                  ...............
+                  -0.016433    0.000293   0.007034
+                  0.010590    0.007662   -0.019977
+                  ...............
+\end{lstlisting}
+
+\item Relaxation: LENER = T, LTSTAT = F 
+\begin{lstlisting}
+r51m_relax_5ps_1600K                                          MOPDYN
+FOR RATES                                                  RUN
+/home/youxq/you/mopac/MOPAC2012.exe              PARAMETERIZATION
+PM6                                              uhf bonds 1SCF
+SCFCRT=1.D-10 AUX(PRECISION=9)
+    11  T   T   T   F                   ! IPOT,LENER,LMOMEN,LXROT,LBOUND
+        F   F   F   F                   ! LTEMP,LTEST,RIMAGE,LCHARG
+        F   F   F   F                   ! LNOISE,LTRAMP,LQUENCH,LTSTAT
+     36  0    0                         ! N,NIMAGE,NRECT
+    2    .00001   .00000   1600.0   1   ! ICF,VMAX,ZNOISE,TREF,IDENRC
+    0.5     5       2000                ! DT,NTIME,NSNAP
+   0.0 0.0 0.0                          ! SX,SY,SZ
+     .000000         F                  ! TRAMP,RTSTAT
+        1000.00     100.000000             ! TCONST,ZTHERM
+        0.544  20.0                      ! SCALE DBOUND
+                  6.11922000   -0.72470900    0.00000200        6 3 0
+                  3.67104300   -0.72752800    0.00000000        6 3 0
+                  ...............
+                  -0.016433    0.000293   0.007034
+                  0.010590    0.007662   -0.019977
+                  ...............
+\end{lstlisting}
+After thermalization, there should be a period of relaxation, which 
+is adiabtic and no rescaling velocities, in order to ensure 
+adiabatic equilibrium at 1600 K had been achieved.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Output Files}
+There are many output files generated in MD simulation.
+
+\subsection{Important Output Files}
+\begin{itemize}
+\item \mcode{*.itinf}. Output \mcode{ZKE,ZPOT,TOTEN,TEMP} in Hartrees, Hartrees, Hartrees and K, respectively every
+\mcode{NTIME*DT} fs.
+
+\item \mcode{*.q3d}. Output coordinates in Chem3D format which can be used to produce snaps or
+movie. After
+\begin{lstlisting}
+sed -in 's/N=//g' *.q3d                                            
+mv *.q3d *.xyz
+\end{lstlisting}
+, JMOL can be used to make snaps or movies. Generated if 
+\mcode{IPOT=7,10,11,15}.
+
+\item \mcode{*.coord}. Record the coordinate of atoms with
+\mcode{ICOL=3} every \mcode{NTIME*DT} fs. Generated if
+\mcode{IPOT=7,10,11,15}.
+
+\item \mcode{*.velocity}. Record the velocities of atoms with
+\mcode{ICOL=3} every \mcode{NTIME*DT} fs. Generated if
+\mcode{IPOT=7,10,11,15}.
+
+\item \mcode{*.accel}. Record the accelerations of atoms with
+\mcode{ICOL=3} every \mcode{NTIME*DT} fs. Generated if
+\mcode{IPOT=7,10,11,15}.
+
+\item \mcode{*.bond}. Bond order matrix. Generated every \mcode{NTIME*DT} fs if
+\mcode{LCHARG=T}
+
+\item \mcode{*.1coord}. Record the coordinates of atoms with \mcode{ICOL=3}
+every \mcode{DT} fetoseconds.
+
+\item \mcode{*.rstart}. Record the coordinates, velocities and
+ghost/links of the last snap.
+\end{itemize}
+
+\subsection{Not So Important Files}
+\begin{itemize}
+\item \mcode{*.charge}. Charge and dipole, without orbital. Generated every \mcode{NTIME*DT} fs if \mcode{LCHARG=T}
+populations.
+
+\item \mcode{*.homo}. SOMO and LUMO for $\alpha$ and $\beta$ orbitals. Generated every
+\mcode{NTIME*DT} fs.
+
+\item \mcode{*.outpt}. Some debug information,such as MopacVersion,
+iteration number, NQC, potential information and so on.
+
+\item \mcode{*.infout}. To check whether dynput file has been read correctly.
+Almost the same as *.dynput except that \mcode{ICF -> ICF2}, there
+is velocity specification if  \mcode{ICF=1}, 'momentum and angular
+momentum are not removed' and no IGHOST/ILINK part.
+
+\item \mcode{mopac.*}. File mopac.dat is the input file of MOPAC,
+while mopac.out and mopac.aux are output files of MOPAC. They will
+be updated every \mcode{DT} fetoseconds.
+
+\item \mcode{mindist.dat}. Obsolete.
+
+\item \mcode{*.checkthedata}. I don't know what is the file for.
+
+\item \mcode{*.links}. Results from \mcode{ghost.f}. The nearest \mcode{NIMAGE} empirical atoms to the QC
+region.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Bugs}
+\subsection{Compile}
+The MOPDYN13 package is written in both Fortran and C, with Fortran
+as the main part and C as the driver to call main program and
+MOPAC2012.exe. As a result, one has to mixed compile Fortran and C.
+As everyone known, the names of variables, functions and subroutines
+in compiled object files (\mcode{*.o}) are exactly the same as the
+ones in the C source files (\mcode{*.c}). On the contrary, the names
+in \mcode{*.o} are the ones in the Fortran source files
+(\mcode{*.f}) followed by '\mcode{_}'. Therefore, when one tries to
+link the object files compiled from Fortran and C, the functions or
+subroutines will be not found when Fortran tries to call C or  vise
+versa.
+
+To manage this problem, the following flag can be added to compile
+Fortran source files.
+\begin{lstlisting}
+-fno-underscoring
+\end{lstlisting}
+The function of this flag is to remove the '\mcode{_}' in object
+files compiled from Fortran source file.
+
+In summary, the compiling command in \mcode{Makefile} should be
+\begin{lstlisting}
+f77  -c  -g -O2 -fno-underscoring *.f
+gcc -c *.c
+f77 -o *.o
+\end{lstlisting}
+where \mcode{f77} cannot be changed to \mcode{gfortran} since the
+code is written in Fortran77, in which some functions and
+subroutines are not available in Fortran90.
+
+If one wants to include \mcode{*.f90} in mixed compiling with C and
+Fortran77, the flag
+\begin{lstlisting}
+-lgfortran -lgfortranbegin
+\end{lstlisting}
+should be added to link options.
+
+
+\subsection{IPOT=3}\label{sec:ipot3}
+If \mcode{IPOT} is assigned a value $3$, MOPDYN13 will be failed to
+call MOPAC2012.exe since there is not any atom specification in
+\mcode{mopac.dat}. In fact, if \mcode{IPOT=3}, \mcode{subroutine
+callmopac(NQC,XQC,YQC,ZQC...)} will be called before assigning
+\mcode{NQC,XQC,YQC,ZQC...} any value. As a result, \mcode{NQC=0} and
+no atom information will written into \mcode{mopac.dat}.
+
+However, we can overcome this bug by two ways, one is to modify
+\mcode{callmopac(NQC,XQC...)} to \mcode{callmopac(N,X...)}, the
+other is to assign \mcode{IPOT=11} and set the number of potential
+after atoms cartesian coordinates \mcode{ICOL=3}. We will adopt the
+second way.
+
+In the second way, firstly the empirical potential energy
+\mcode{ZPOT} in model \mcode{empni} will be calculated and the
+empirical force between (quantum) atoms with \mcode{ICOL=3} will be
+assigned to zero. Secondly, after assigning
+\mcode{NQC,XQC,YQC,ZQC,IQTYP...}, \mcode{subroutine
+callmopac(NQC,XQC,YQC,ZQC...)} will be called to get quantum force
+\mcode{FMOP} and the quantum potential energy \mcode{ZPOT} which
+will override the empirical one. Finally, the quantum potential and
+force \mcode{ZPOT} and \mcode{FMOP} will be used in MD simulation.
+Therefore, in this method, everything works well, except some
+computation time is wasted on calling \mcode{subroutine empni} in
+every iteration.
+
+\subsection{q3d File}
+File \mcode{*.q3d} restores the coordinate information which can be
+used to generate pictures and movies by software such as JMOL. The
+first line of \mcode{*.q3d} is not correct, which should be 'TIME= 0
+fs' instead of 'TIME = ? fs' where '?' represent some unfortunate
+number. Because in the first time to call \mcode{subroutine prt3d},
+the buffers \mcode{ITIME} and \mcode{ISNAP} haven't been assigned
+any value.
+\subsection{itinf File}
+There should be a title line
+\begin{lstlisting}
+Kinetic energy (hartrees), Potential energy (hartrees), Total Energy
+(hartrees), Temperature (K), Time (fs).
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Algorithm}
+\subsection{Verlet}
+In MD, Verlet algorithm is frequently used to solve Newtonian
+equation with initial condition $x_0$ and $v_0$.
+
+From the definition of acceleration and using forward difference in
+velocity, backward difference in acceleration, we have
+\[ \frac{\frac{x_{n+1}-x_n}{\Delta
+t}-\frac{x_{n}-x_{n-1}}{\Delta t}}{\Delta t} = a_n, \] after
+re-organizing the terms, one gets
+\[  x_{n+1} = 2 x_n -x_{n-1} + a_n \Delta t^2 + \mathcal{O}(\Delta t^4) \]
+where there's no velocity term. It tells us $x_{n+1}$ is readily
+solved once $x_n$ and $x_{n-1}$ are known with an error of order
+$\Delta t^4$. However, it is obviously that $x_0$ and $x_1$ must be
+given if one wants to obtain $x_n$ for arbitrary $n$ iteratively.
+Although $x_0$ is already known as initial condition, $x_1$ is
+unknown. Therefore, solving $x_{n}$ turns into a problem of getting
+$x_1$. In Verlet method, $x_1$ is given by the familiar relation
+\[ x_1=x_0+v_0 \Delta t + \frac{1}{2} a_0 \Delta t^2 \] with a low
+degree of accuracy which will propagate into $x_n$. At present, all
+the $x_n$ for $\forall n$ have been determined. In order to close
+the problem, the velocity $v_n$ should be solved, too. Velocity
+Verlet reads
+\[ v(t+\Delta t) = v(t) + \frac{a(t)+a(t+\Delta t)}{2}\Delta t. \]
+
+In summary, there are three iterative relations in this algorithm,
+\begin{eqnarray}
+x_1\quad &=& x_0+v_0 \Delta t + \frac{1}{2} a_0 \Delta t^2
+\label{eq:verlet1} \\ x_{n+1} &=& 2x_n -x_{n-1} + a_n \Delta t^2
+\label{eq:verlet2}\\  v_{n+1} &=& v_n + \frac{a_n+a_{n+1}}{2}\Delta
+t \label{eq:verlet3}
+\end{eqnarray}
+ Therefore, in Verlet algorithm, one should obtain $a_0=F_0/m$
+ where $F_0=F(x_0)$ is the force law such as gradient of LJ potential or QM potential by calling MOPAC2012.exe, followed
+by $x_1$ from Eq.\ref{eq:verlet1}, $a_1=F_1/m$ from the force law,
+$x_2$ from Eq.\ref{eq:verlet2}, $a_2=F_2/m$ from force law again and
+$v_2$ from Eq.\ref{eq:verlet3} and so forth.
+
+In MOPDYN13, Verlet algorithm is used to obtain position, velocity
+and acceleration at time \mcode{DT} only.
+
+\subsection{Beeman}
+Beeman's algorithm is widely used in MD to solve Newtonian equation
+with initial condition $x_0$ and $v_0$. In this method, variables of
+$t+\Delta t/2$ are used in intermediate step.
+
+The iterative relation in Beeman's method is
+\begin{eqnarray}
+x(t+\Delta t) &=& x(t) + v(t)\Delta t +\frac{1}{6}(4a(t)-a(t-\Delta
+t)) \Delta t^2 \label{eq:beeman1}\\
+v(t+\Delta t) &=& v(t) + \frac{1}{6}(2a(t+\Delta t) + 5a(t) -
+a(t-\Delta t))\Delta t \label{eq:beeman2}
+\end{eqnarray}
+It is obviously that the expression is much more complicated than
+that in Verlet's method. Nevertheless, this method is more accuracy
+than Verlet's. In Beeman's algorithm, the local error is
+$\mathcal{O}(\Delta t^4)$ in position and $\mathcal{O}(\Delta t^3)$
+in velocity, and the global error is $\mathcal{O}(\Delta t^3)$. For
+comparison, the local error is $\mathcal{O}(\Delta t^4)$ in position
+and $\mathcal{O}(\Delta t^2)$ in velocity, and the global error is
+$\mathcal{O}(\Delta t^2)$ in Verlet's algorithm.
+
+Another observation from Eq.\ref{eq:beeman1} and Eq.\ref{eq:beeman2}
+is that variables at both times $t$ and $t-\Delta t$ are needed to
+get $t+\Delta t$ ones.
+
+Therefore, in MOPDYN13, Beeman algorithm is used to solve the
+Newtonian equations of atoms at time \mcode{t>DT}, with Verlet
+algorithm as an initiation to obtain position, velocity and
+acceleration at time \mcode{DT} only.
+
+
+
+In summary, $x_0$ and $v_0$ are provided as initial condition and
+one has obtained $x_1$ and $v_1$ from other algorithm such as Verlet
+algorithm. Based on these, one firstly gets $a_0$ and $a_1$ from
+force law such as gradient of LJ potential or QM potential by
+calling MOPAC2012.exe , secondly solves $x_2$ from
+Eq.\ref{eq:beeman1}, and then obtains $a_2$ from force law again,
+finally solves $v_2$ from Eq.\ref{eq:beeman2}, and so forth.
+
+
+\subsection{Temperature}
+From the principle of equipartition of energy, translation
+temperature $T$ is defined as
+\begin{equation}
+T=\frac{2K}{k_B N_{dof}}=\frac{1}{k_B N_{dof}}\sum^N_{i=1}m_i v_i^2
+\end{equation}
+where $k_B$ is Boltzmann constant and $N_{dof}$ is the number of
+degrees of freedom.
+
+In the same way, the rotational temperature $T_r$ is defined as
+\[
+\frac{1}{2}k_B T_r N_{dofr} = K = \frac{1}{2}\omega I \omega
+\]
+where $N_{dofr}$ is the number of degrees of freedom in rotation
+which should be equal to $3$, $\omega$ is angular velocity, and $I$
+is the moment of inertia. If we write them in tensor form
+\begin{equation}
+T_r = \frac{1}{3 k_B} I_{ij}\omega^i\omega^j
+\end{equation}
+where the Einstein summation rule is used.
+
+(Does this kind of definition of temperature is the real temperature
+in thermodynamics? Principle of equipartition of energy is based on
+ensemble.)
+
+\subsection{Temperature Control}\label{sec:tem}
+There are four different approach to control temperature, which are
+represented by five logical keywords
+\mcode{LTEMP,LTSTAT,RTSTAT,LTRAMP} and \mcode{LQUENCH}, among which
+\mcode{LTSTAT} is the most frequently used.
+
+\subsubsection*{LTEMP}
+This is very brute force method of controlling temperature. If the
+temperature of the system is $T$, and the thermal bath temperature
+is $T_{ref}$, in this method the velocity will be scaled by a factor
+of $\sqrt{T_{ref}/T}$.
+
+In MOPDYN13, the velocities will be rescaled by a factor of
+$\sqrt{T_{ref}/T}$ every \mcode{DT*NTIME} $fs$ in order to keep the
+temperature at $T_{ref}$ if \mcode{LTEMP} is true.
+
+\subsubsection*{LTSTAT}
+If \mcode{LTSTAT=T}, Berendsen(1984)'s method will be used to
+thermalize the system to a temperature $T_{ref}$. In this method,
+the temperature will evolve in the following manner
+\begin{equation}
+T_{ref}-T = (T_{ref}-T_0)\exp(-\frac{t}{\tau}) \label{eq:berendsen}
+\end{equation}
+where $T_0$ is the temperature at time $t=0$. As shown in
+Eq.\ref{eq:berendsen}, $\tau$ is the characteristic time of
+thermalization.
+
+In MOPDYN13, the velocities will be rescaled every \mcode{DT} $fs$
+by a factor of
+\[\sqrt{1+\frac{1}{\textrm{TCONST}} \left[ \frac{T_{ref}}{T}-1\right]}  \]
+which is the discrete version of Eq.\ref{eq:berendsen} if
+\mcode{LTSTAT=T}, where $\textrm{TCONST}$ is actually
+$\frac{\tau}{DT}$. As a result, the temperature after rescaling
+becomes
+\[ T + \frac{1}{\textrm{TCONST}}(T_{ref}-T). \] Therefore, if we assign
+\mcode{TCONST=1}, it degenerates into adhoc case (\mcode{LTEMP=T});
+if we assign \mcode{TCONST >> DT*NTIME*NSNAP}, there is no
+temperature control at all. So \mcode{TCONST} should be assigned a
+suitable value in thermalization.
+
+\subsubsection*{RTSTAT}
+It is the same as \mcode{LTSTAT}, except for rotation. It will
+rescale $\vec{\omega}\times\vec{r}$, instead of $v$.
+
+\subsubsection*{LTRAMP and LQUENCH}
+They can be found in relevant part in Sec.\ref{sec:key}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Other Issues}
+
+\subsection{MOPAC}\label{sec:mopac}
+There are $256$ keywords in MOPAC. Among them, $12$ keywords have
+been used in our example in Sec.\ref{sec:key}. They are \mcode{PM6
+uhf bonds 1SCF SCFCRT=1.D-10 AUX(PRECISION=9) denout (oldens) xyz
+gradients dcart geo-ok}. In the following, these $12$ keywords will
+be explained firstly, and then other useful keywords will be
+introduced.
+
+\subsubsection*{Keywords in Example}
+\begin{itemize}
+
+\item \mcode{PM6}: Use the PM6 Hamiltonian in which atomic and diatomic parameters both
+exist. In semi-empirical method, lots of x-electron x-integral is
+parameterized.
+
+\item \mcode{uhf}: Use the Unrestricted Hartree-Fock method.
+
+\item \mcode{bonds}: Print final bond-order matrix, the non-diagonal element of which is defined as the sum of
+the squares of the density matrix elements connecting any two atoms.
+The diagonal terms are the valencies calculated from the atomic
+terms only and are defined as the sum of the bonds the atom makes
+with other atoms. In UHF and non-variationally optimized
+wavefunctions the calculated valency will be incorrect, the degree
+of error being proportional to the non-duodempotency of the total
+density matrix.
+
+\item \mcode{1SCF}: Do one scf and then stop, the same as single-point
+energy calculation in Gaussian. When 1SCF is used on its own (that
+is, RESTART is not also used), then derivatives will only be
+calculated if GRAD is also specified.
+
+\item \mcode{SCFCRT=1.D-10}: The default SCF criterion, $0.0001$ kcal/mol,
+is to be replaced by $10^{-10}$ to make the potential energy more
+accuracy. The SCF criterion is the change in energy in kcal/mol on
+two successive iterations. Other minor criteria may make the
+requirements for an SCF slightly more stringent. The SCF criterion
+can be varied from about $1.0$ to $10^{-25}$, although numbers in
+the range $0.1$ to $10^{-9}$ will suffice for most applications.
+
+\item \mcode{AUX(PRECISION=9)}: Output auxiliary information in \mcode{mopac.aux}
+for use by other programs. To increase precision by m digits (m
+limited to the range 1 to 9), use PRECISION=m.
+
+\item \mcode{denout}: Density matrix output in file
+\mcode{mopac.den}.
+
+\item \mcode{oldens}: Read initial density matrix off disk. In MD
+simulation, \mcode{oldens} will be automatically added to keyword
+list if MOPAC is not called for the first time.
+
+\item \mcode{xyz}: Do all geometric operations in Cartesian
+coordinates.
+
+\item \mcode{gradients}: Print all gradients. In a 1SCF calculation gradients
+are not calculated by default: in non-variationally optimized
+systems this could take a lot of time. GRADIENTS allows the
+gradients to be calculated. Normally, gradients will not be printed
+if the gradient norm is less than $2.0$. However, if GRADIENTS is
+present, then the gradient norm and the gradients will
+unconditionally be printed. Abbreviation: GRAD.
+
+\item \mcode{dcart}: The Cartesian derivatives which are calculated
+in DCART for variationally optimized systems are printed if the
+keyword DCART is present. The derivatives are in units of
+kcals/$\AA$, and the coordinates are displacements in x, y, and z.
+
+\item \mcode{geo-ok}: Override some safety checks. Normally the
+program will stop if certain errors occur. If GEO-OK is present, the
+job will continue, but there is an increased probability that the
+results will not be meaningful. The errors that are affected are: If
+two atoms are within $0.1\AA$ of each other. In practice, most jobs
+that terminate due to these checks contain errors in data, so
+caution should be exercised if GEO-OK is used.
+
+\end{itemize}
+
+In summary, the keywords \mcode{PM6 uhf bonds 1SCF} and
+\mcode{AUX(PRECISION=9)} are always necessary, and the keywords
+\mcode{denout (oldens) xyz gradients dcart geo-ok} will be added in
+to keyword list by MOPDYN13 automatically. While, the keywords
+\mcode{SCFCRT=1.D-10} are not necessary.
+
+\subsubsection*{Other Useful Keywords}
+\begin{itemize}
+\item \mcode{ITRY}: Set limit of number of SCF iterations to n.
+The default maximum number of SCF iterations is 2000. When this 
+limit presents difficulty, ITRY=nn can be used to re-define it. For 
+example, if ITRY=4000 is used, the maximum number of iterations will 
+be set to 4000.
+
+\item \mcode{PL}: Output the convergence informtion in mopac.output.
+A tool for monitoring the behavior of SCF 
+calculations is useful when they take too long, or even fail 
+altogether. When keyword PL is present, the energy of the system and 
+the rate of change of the electronic structure can be monitored 
+iteration to iteration.  This keyword is useful particularly when 
+trying out various combinations of convergers such as PULAY, KING, 
+SHIFT, and DAMP to find the method that works best. The rate of 
+change in the electronic structure is given by the quantity PLS in 
+the output.  For example, in the line:
+
+\begin{lstlisting}
+ ITERATION 7 PLS= 0.168E-01 0.395E-06 ENERGY -34.585270 DELTAE   -2.2653063
+\end{lstlisting}
+
+the alpha wavefunction changed by 0.0168 between iteration 6 and 
+iteration 7. At the same time, the beta wavefunction changed by 
+0.000000395. The change in energy over these iterations is -2.265 
+kcal/mol.
+
+If the calculation uses a restricted Hartree-Fock method, then the 
+line would look like this:
+
+\begin{lstlisting}
+ITERATION 7 PLS= 0.900E-02 0.000E+00 ENERGY 46.712559 DELTAE 
+-0.3203785 
+\end{lstlisting} 
+
+Now the change in total wavefunction between iteration 6 and 7 would 
+be 0.009.  The second number, here 0.000E+00, is not used and should 
+be ignored.
+
+\item \mcode{SHIFT}: In an attempt to obtain an SCF by damping 
+oscillations which slow down the convergence or prevent an SCF being 
+achieved, the virtual M.O. energy levels are shifted up or down in 
+energy by a shift technique. The principle is that, if the virtual 
+M.O.s are changed in energy relative to the occupied set, then the 
+polarizability of the occupied M.O.s will change pro rata. Normally, 
+oscillations are due to autoregenerative charge fluctuations. The 
+SHIFT method has been re-written so that the value of SHIFT changes 
+automatically in an attempt to optimize convergence. This can result 
+in a positive or zero shift of the virtual M.O. energy levels. A 
+SHIFT of 20 will raise the virtual M.O.s by 20 eV above their 
+correct value. The disadvantage of SHIFT is that a large value can 
+lead to excessive damping, and thus prevent an SCF being generated. 
+As some virtual M.O.s are used in non-variationally optimised 
+calculations SHIFT is automatically anulled at the end of the SCF in 
+these circumstances. 
+
+\item \mcode{PULAY}: Different SCF convergers. The default converger 
+in the SCF calculation is to be replaced by Pulay's procedure [48] 
+as soon as the density matrix is sufficiently stable.   A 
+considerable improvement in speed can frequently be achieved by the 
+use of PULAY, particularly for excited states. 
+
+\item \mcode{KING}: Use Camp-King converger for SCF.The
+Camp-King converger is to be used. This is a very powerful, but CPU
+intensive, SCF converger.
+
+\item \mcode{LARGE}: Print expanded output.
+
+\item \mcode{MULLIK}: Print the Mulliken population analysis.
+
+\item \mcode{RHF}: Use Restricted Hartree-Fock methods.
+\end{itemize}
+
+\subsubsection*{Cartesian Coordinate Definition}
+
+A definition of geometry in Cartesian coordinates consists of the
+chemical symbol or atomic number, followed by the Cartesian
+coordinates and optimization flags.
+
+Here is an example of a MOPAC data-set for formaldehyde, in which
+all coordinates are Cartesian.
+\begin{lstlisting}
+O 0.00  0  0.00  0 0.00  0
+C 1.21  1  0.00  0 0.00  0
+H 1.79  1  0.93  1 0.00  0
+H 1.79  1 -0.93  1 0.00  0
+\end{lstlisting}
+the optimization flag "1" after the "0.93" indicates that the y
+coordinate of the first hydrogen atom is to be optimized, and the
+optimization flay "0" indicates that the x (or y or z) coordinate of
+that atom is not to be optimized.
+
+
+\subsection{Unit}
+The time is in $fs$. All the masses are in unit of $amu$. All the
+length and coordinates are in the unit of $\AA$. All the velocities
+are in unit of $\AA/fs$. All the kinetic energies are in unit of
+$amu (\AA/fs)^2$, but when the kinetic energy adds with potential
+energy, its unit turns to Hartrees. The potential obtained by MOPAC
+is in $eV$, and changed to Hartrees afterwards. The force obtained
+by MOPAC is in $kcal/mol/\AA$, and changed to $amu \AA/fs^2$ later.
+The acceleration is in $\AA/fs^2$.
+
+\subsection{Counter}
+\begin{itemize}
+\item \mcode{IACCEL}: the number of times of calling \mcode{subroutine accel}
+\item \mcode{IRUN}: \mcode{IRUN-1 = ISNAP}
+\item \mcode{IMD}: the number of times of calling \mcode{subroutine beeman}
+\item \mcode{ITIME}: counter of inner loop in \mcode{subroutine dynmol}, ranging from \mcode{1} to \mcode{NTIME}
+\item \mcode{ISNAP}: counter of outer loop in \mcode{subroutine
+dynmol}, ranging from \mcode{1} to \mcode{NSNAP}, which is the
+number of outputs.
+\item \mcode{MopIteration}: the number of times of calling
+MOPAC2012.exe
+\end{itemize}
+
+\section{Example*}
+What will happend if LENER=F and LTSTAT=F in collision.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\acknowledgments
+
+\appendix
+
+\section{Appendix I}
+
+\begin{thebibliography}{999}
+\end{thebibliography}
+\end{document}
