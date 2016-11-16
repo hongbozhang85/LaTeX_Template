@@ -1,0 +1,188 @@
+\documentclass[a3paper,10pt]{report}
+
+% Definitions
+\usepackage{lscape}             % from portrait to landscape orientation
+\usepackage[height=38cm,width=26cm]{geometry}
+\usepackage{timetable}
+\usepackage{multicol}
+%\usepackage{xparse}
+
+\begin{document}
+\thispagestyle{empty}
+
+% \ExplSyntaxOn
+% \DeclareExpandableDocumentCommand{\eval}{m}{\int_eval:n {#1}}
+% \ExplSyntaxOff
+
+% define the name of courses
+% a for lecturer, t for tutor, b for building
+\newcommand{\COMPA}{6710 JAVA}
+\newcommand{\COMPB}{8110 MANAGE}
+\newcommand{\COMPC}{8190 MODEL}
+\newcommand{\COMPD}{8701 PCI}
+
+\newcommand{\COMPAa}{Steve Blackburn}
+\newcommand{\COMPAba}{Coombs T}
+\newcommand{\COMPAbb}{MCC T3}
+\newcommand{\COMPAt}{Unknown}
+\newcommand{\COMPAbc}{N116}
+
+\newcommand{\COMPBa}{Kerry Taylor}
+\newcommand{\COMPBba}{JD 102}
+\newcommand{\COMPBbb}{Eng T}
+\newcommand{\COMPBt}{Unknown}
+\newcommand{\COMPBbc}{IR 31}
+
+\newcommand{\COMPCa}{Shayne Flint}
+\newcommand{\COMPCba}{Home}
+
+\newcommand{\COMPDa}{Emmaline Lear}
+\newcommand{\COMPDba}{SRES T}
+\newcommand{\COMPDbb}{Han 223}
+\newcommand{\COMPDt}{Amy Osbourne}
+\newcommand{\COMPDbc}{Phys T}
+
+\setlength{\columnsep}{10cm}
+\begin{landscape} % comment it to use portrait
+\begin{multicols}{2}
+\begin{center}
+
+\noindent\printheading{Hongbo's Time Schedule, 2016 S2 Week 7, Aug28 - Sep3}
+
+% Define the layout of your time tables
+\setslotsize{2.8cm}{0.35cm}
+%\setslotcount {7} {40}
+\setslotcount {7} {64} % 7days and 64/4 hours
+\settopheight{3}
+\settextframe{0.8mm}
+\setbottomspace{5pt}
+
+% Retro
+\setframetype[c]{2}
+\seteventcornerradius{5pt}
+
+% Print timestamps into event blocks
+\setprinttimestamps{2}
+
+% Define event types
+\defineevent{lecture}{0.0} {0.28}{1.0} {1.0}{1.0}{1.0}
+\defineevent{daily}{0.3}{0.3}{0.3}{1.0}{1.0}{1.0}
+\defineevent{meeting}{0.4}{0.5}{0.1}{1.0}{1.0}{1.0}
+\defineevent{independent-fix}{0.4} {0.3} {0.4}{1.0}{1.0}{1.0}
+\defineevent{independent-flexible}{0.5}{0.5}{0.7}{1.0}{1.0}{1.0}
+\defineevent{spare} {0.9}{0.9}{0.9}{0.0}{0.0}{0.0}
+\defineevent{tutorial}   {0.6} {0.8} {0.2} {1.0}{1.0}{1.0}
+\defineevent{class} {1.0} {0.4} {0.2} {1.0}{1.0}{1.0}
+\defineevent{lab}       {0.21}{0.5} {0.16}{1.0}{1.0}{1.0}
+\defineevent{exam}{0.0}{0.0}{0.0}{1.0}{1.0}{1.0}
+
+% Start the time table
+\begin{timetable}
+  \hours{6}{15}{1} % begin at 6:00, 15min per unit (relevant to
+                   % \setslotcount {.} {64}), print the end time
+  \englishdays{7} % start at Sunday. so Monday should be 2
+  % lectures, labs, tutorials, classes
+  \event 3 {0900} {1100} {\COMPA{}}  {\COMPAa{}}  {\COMPAba{}}  {lecture} 
+  \event 3 {1100} {1300} {\COMPB{}}  {\COMPBt{}}  {\COMPBbc{}}  {tutorial} 
+  \event 3 {1300} {1400} {\COMPD{}} {Guest Lectures} {\COMPDbc{}} {class} 
+  \event 3 {1500} {1600} {\COMPB{}} {\COMPBa{}} {\COMPBba{}} {lecture} 
+  \event 4 {1000} {1100} {\COMPD{}} {\COMPDa{}}  {\COMPDba{}}  {lecture} 
+  \event 4 {1100} {1300} {\COMPD{}} {\COMPDt{}} {\COMPDbb{}} {tutorial} 
+  \event 5 {0900} {1100} {\COMPB{}} {\COMPBa{}} {\COMPBbb{}} {lecture} 
+  \event 5 {1100} {1300} {\COMPA{}} {\COMPAt{}} {\COMPAbc{}} {lab} 
+  \event 6 {1300} {1400} {\COMPA{}} {\COMPAa{}} {\COMPAbb{}} {lecture} 
+  % English
+  \event 1 {0600} {0800} {ENGLISH} {Listen to this. Paul S Gruber}{} {daily}
+  \event 2 {0600} {0800} {ENGLISH} {Listen to this. Paul S Gruber}{}  {daily}
+  \event 3 {0600} {0800} {ENGLISH} {Listen to this. Paul S Gruber}{}  {daily}
+  \event 4 {0600} {0800} {ENGLISH} {Listen to this. Paul S Gruber}{}  {daily}
+  \event 5 {0600} {0800} {ENGLISH} {Listen to this. Paul S Gruber}{}  {daily}
+  \event 6 {0600} {0800} {ENGLISH} {Listen to this. Paul S Gruber}{}  {daily}
+  % meeting
+%  \event 2 {1500}{1700}{6710 JAVA}{group meeting}{Chiefly}{meeting}
+  \event 1 {1400}{1600}{8110 MANAGE}{group meeting}{Hancock}{meeting}
+  % exam
+  \event 2 {1730}{1830}{6710 JAVA}{mid-semester exam}{CSIT}{exam}
+  % gym
+  \event 1 {1730} {1900} {GYM} {}{ANU Sport} {daily}
+%  \event 2 {1730} {1900} {GYM} {}{ANU Sport}  {daily}
+  \event 3 {1730} {1900} {GYM} {}{ANU Sport}  {daily}
+  \event 4 {1730} {1900} {GYM} {}{ANU Sport}  {daily}
+  \event 5 {1730} {1900} {GYM} {}{ANU Sport}  {daily}
+  \event 6 {1730} {1900} {GYM} {}{ANU Sport}  {daily}
+  % weekend
+  \eventL 7 {0600} {2200} {SPARE} {Shopping\\Cleaning\\Laundry\\Tele
+    home\\Photograph\\Hotel\\Kindergarden\\TimeTable\\Weekly Diary}{}{spare}{4.8}
+  % COMP8190
+  \event 2 {0800}{1000}{\COMPC{}}{\COMPCa{}}{\COMPCba{}}{independent-fix}
+  % Review at Friday afternoon
+%  \eventL 6 {1400}{1600}{REVIEW}{COMP6710\\COMP8110\\COMP8710\\COMP8190}{}{independent-flexible}{1.1}
+%  \eventL 6 {1000}{1200}{REVIEW}{watch video\\make note\\read book}{}{independent-flexible}{1.1}
+  \eventL 6 {2000}{2100}{REVIEW}{COMP8190 review}{}{independent-flexible}{0}
+  %%% weekly events, some of them are long duration events
+  \event 1 {0900}{1300}{6710 JAVA}{mse review}{}{independent-fix}
+  \event 1 {1600}{1730}{6710 JAVA}{mse review}{}{independent-fix}
+  \event 1 {2000}{2100}{6710 JAVA}{ass2}{}{independent-fix}
+  \event 2 {1000}{1200}{6710 JAVA}{mse review}{}{independent-fix}
+  \event 2 {1300}{1700}{6710 JAVA}{mse review}{}{independent-fix}
+  \event 2 {1900}{2100}{8701 PCI}{ass2 draft}{}{independent-fix}
+  \event 3 {0800}{0900}{6710 JAVA}{ass2}{}{independent-fix}
+  \event 3 {1600}{1700}{8701 PCI}{ass2 draft}{}{independent-fix}
+  \event 3 {2000}{2100}{8701 PCI}{ass2 draft}{}{independent-fix}
+  \event 4 {0800}{1000}{8701 PCI}{ass2 draft}{}{independent-fix}
+  \event 4 {1400}{1700}{6710 JAVA}{labtest2}{}{independent-fix}
+  \event 4 {2000}{2100}{8110 MANAGE}{ass2}{}{independent-fix}
+  \event 5 {0800}{0900}{6710 JAVA}{labtest2}{}{independent-fix}
+  \event 5 {1400}{1700}{8110 MANAGE}{ass2}{}{independent-fix}
+  \event 5 {2000}{2100}{8110 MANAGE}{ass2}{}{independent-fix}
+  \event 6 {0800}{1200}{8110 MANAGE}{ass2}{}{independent-fix}
+  \event 6 {1300}{1700}{8701 8110}{8701 ass2\\8110 ass2}{}{independent-fix}
+%  \event 5 {2000}{2200}{TIME}{ASLC time management}{}{independent-fix}
+
+
+\end{timetable}
+
+\end{center}
+
+%\columnseprule=1pt            
+%\rule{\textwidth}{0.5mm}
+
+%\begin{multicols}{2}
+%\begin{flushright}
+DEAD LINES
+\begin{itemize}
+\item Week 7
+\begin{itemize}
+    \item JAVA: Thursday Ass2:classImplement. DDL 11am
+    \item JAVA: Thursday labtest2 11am
+    \item JAVA: Monday  Mid-Semester-Exam. 5pm
+    \item MANAGE: Friday Ass2. DDL 17pm
+    \item MANAGE: Ass2:peer-assess. Beginning of next week.
+    \item MANAGE: Wednesday Ass2 draft DDL 5pm
+    \item MODEL: Friday Hurdles5. DDL 12pm
+    \item PC1: Wednesday Ass2 draft 11am
+    \item PC1: Friday Ass2 5pm.
+\end{itemize}
+\item Mid-Semester Break 1
+\begin{itemize}
+    \item MODEL: mid exam
+    \item MODEL: several Hurdle workshop
+    \item MODEL: peer-review
+\end{itemize}
+\item Mid-Semester Break 2
+\begin{itemize}
+    \item MODEL: several Hurdle workshop
+    \item MODEL: peer-review
+\end{itemize}
+\item Week 8
+\begin{itemize}
+    \item JAVA: Thursday Ass2 Stage E: code and test. DDL 11 am
+\end{itemize}
+\end{itemize}
+%\end{flushright}
+\end{multicols}
+
+
+
+\end{landscape} % comment it to use portrait
+\end{document}          
